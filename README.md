@@ -1,118 +1,131 @@
-# Camera localization dataset — Yas Marina North, constructor0, 2026-10-13 22-53-42
+# Camera-only localization of a race car — Yas Marina, Constructor Labs challenge
 
-## Task
+**Result on our validation laps 6-7 (never used for training or tuning): position RMSE 0.168 m,
+lateral 0.071 m, yaw 0.089°, 100 % of poses within 0.5 m, coverage 100 %, causal, 10 Hz.**
 
-Estimate the pose of the race car (frame `constructor0/base_link`) in the track frame `map`
-from its **7 cameras only**: position x, y and heading yaw, at camera rate.
+The dataset description of the organisers is in [DATASET.md](DATASET.md).
 
-You may use: the camera images, their intrinsics (`camera_info`), the camera extrinsics (`/tf_static`)
-and the track borders (`/constructor0/track_bounds`, a map prior).
-The ego pose topics (`/tf`, `/constructor0/state_estimation`) are the **ground truth**: use them for
-development, training and scoring, not as an input of the method — except the very first pose of the
-run, which may be used as the initial pose.
+## Method in one picture
 
-## Data
+![pipeline](docs/figures/pipeline.png)
 
-One mcap file (ROS 2, CDR, message schemas embedded), 1194 s, 7.0 GiB. Night session, the car drives
-laps at up to ~40 m/s and passes through the pit lane. The recording is trimmed to the driving part
-(first motion − 5 s … last motion + 3 s).
+INTRO method **3a** (the training run becomes a 3D feature map, relocalization by PnP) inside
+method **4** (a filter that joins car motion and map fixes):
 
-| topic | type | rate | content |
-|---|---|---|---|
-| `/constructor0/sensor/camera_{fl,fr,cl,cr,r,rl,rr}/compressed_image` | sensor_msgs/CompressedImage | 10 Hz | jpeg 1506x728; `header.stamp` = exposure time |
-| `/constructor0/sensor/camera_*/camera_info` | sensor_msgs/CameraInfo | 1 Hz | K, D (plumb_bob) |
-| `/tf_static` | tf2_msgs/TFMessage | every 10 s | `constructor0/base_link` -> every sensor (cameras, lidars, radars, gnss, imu) |
-| `/tf` | tf2_msgs/TFMessage | 106 Hz | `map` -> `constructor0/base_link` — **ground truth** |
-| `/constructor0/state_estimation` | sd_localization_msgs/StateEstimation | 106 Hz | same pose + velocities, accelerations, status — **ground truth** |
-| `/constructor0/track_bounds` | visualization_msgs/MarkerArray | every 10 s | LINE_STRIPs in `map`: `track_left`, `track_right`, `pitlane_left`, `pitlane_right` |
+- **Offline, once, training run** (ground truth allowed): SIFT features of the cameras `fr` and `cr`
+  (5 Hz keyframes, contrast-enhanced with CLAHE, car body masked) are matched between keyframes 0.6 s and
+  0.2 s apart, checked against the epipolar line of the **known GT poses** and triangulated: about 1 M 3D
+  points with descriptors. The yaw-rate bias of the car state is estimated on the same laps.
+- **Online, causal, every image set (10 Hz)**: an EKF predicts the pose from speed, yaw rate and lateral
+  speed of the car state (stamps ≤ t). The keyframes near the **predicted** pose give candidate 3D points;
+  SIFT matches + PnP RANSAC give the car pose per camera; a chi-square gate rejects bad fixes. If five
+  rejected fixes in a row agree with each other, the filter is the one that is wrong (lock-out): its
+  uncertainty is inflated and the fix is accepted. One pose is written per image set.
 
-Cameras: `fl`/`fr` front (narrow, fx ≈ 2600 / 1350), `cl`/`cr` front-side wide, `rl`/`rr` rear-side,
-`r` rear. Camera frames `constructor0/camera_*` are optical frames (z forward, x right, y down).
-`base_link`: x forward, y left, z up (REP 103).
+Inputs at inference: images, calibration (`camera_info`, `/tf_static`), track borders (only for the road
+height under the car), speed / yaw rate / lateral speed of `state_estimation`, the first pose.
+Never: `/tf`, position / orientation / s, n of `state_estimation`
+([config/state_columns.yaml](config/state_columns.yaml), enforced by `tools_team/state_io.load_state`).
 
-Latched topics (tf_static, camera_info, track_bounds) are repeated, so they are present at any start
-offset and `ros2 bag play` works without QoS overrides. Foxglove opens the file directly; for
-`ros2 bag play` of `state_estimation` the `sd_localization_msgs` package is needed (all other topics
-are standard ROS messages).
-
-Accuracy notes
-- Ground truth is the car's state estimation (RTK GNSS + lidar map matching + IMU/odometry fusion),
-  roughly 0.1 m / 0.2° on this track.
-- Camera extrinsics were calibrated against the lidar on 2026-10-12/14. Pitch is reliable for all
-  cameras; yaw is reliable for `r` and `rl`, about ±1° for `fl`/`fr`; `cl`/`cr` keep the previous
-  calibration. Roll and translation are not calibrated (mount values).
-- Track borders are the surveyed borders from the map loaded on the car (same `map` frame as the GT).
-
-## Reading the data
+## Run
 
 ```bash
-pip install mcap mcap-ros2-support numpy
-python3 tools/extract_gt.py c0_2026-10-13_22-53-42_camloc_0.mcap gt.csv     # timestamp_ns,x,y,z,yaw
+python -m venv .venv && . .venv/bin/activate          # Windows: .venv\Scripts\Activate.ps1
+pip install -r requirements.txt                        # Python 3.10, CPU only
+# put the training run at data/c0_2026-10-13_22-53-42_camloc_0.mcap
+
+# hidden test run: map from the whole training run (7 laps + pit lane), first pose "timestamp_ns,x,y,yaw"
+python run.py --final --test-mcap <test.mcap> --first-pose <t_ns>,<x>,<y>,<yaw> --out out/submission.csv
+
+# reproduce our validation score (map + bias from laps 1-5, scored on laps 6-7)
+python tools_team/crop_gt.py data/gt.csv data/laps.csv 6 7 --out data/gt_val.csv   # after the first run.py
+python run.py --test-mcap data/c0_2026-10-13_22-53-42_camloc_0.mcap --first-pose-csv data/gt_val.csv \
+              --out out/submission_val.csv --eval-gt data/gt_val.csv
 ```
 
-```python
-from mcap.reader import make_reader
-from mcap_ros2.decoder import DecoderFactory
-with open('c0_2026-10-13_22-53-42_camloc_0.mcap', 'rb') as f:
-    for schema, channel, message, msg in make_reader(f, decoder_factories=[DecoderFactory()]) \
-            .iter_decoded_messages(topics=['/constructor0/sensor/camera_fl/compressed_image']):
-        stamp_ns = msg.header.stamp.sec * 10**9 + msg.header.stamp.nanosec
-        jpeg = bytes(msg.data)          # cv2.imdecode(np.frombuffer(jpeg, np.uint8), cv2.IMREAD_COLOR)
-```
+`run.py` runs every stage and caches its outputs in `data/` and `config/` (`--rebuild` recomputes them):
+GT / static / car state extraction → map images → laps → car-body masks → yaw-rate bias → 3D map →
+localization. A full run from the raw mcap takes about 45 min on our laptop (map ~16 min, localization of
+223 s ~10 min). The output is deterministic (fixed RANSAC seed, one OpenCV object set per thread): two runs
+give byte-identical CSV files, also a `--rebuild` from a clean checkout (same maps, same CSV hash).
 
-## Submission
+Other entry points: `python loc/ablation.py` (table below), `python loc/plots.py` (figures),
+`python loc/test_map.py reloc --map data/map/laps1-4 --lap 5` (per-frame relocalization check).
 
-A CSV file with a header line:
+## Results
 
-```
-timestamp_ns,x,y,yaw
-1791918157176982265,7.1728,-9.9093,0.126255
-...
-```
+Validation = laps 6 and 7 (223.5 s, lap 7 is the fastest lap of the run, 41 m/s). Map and bias come from
+laps 1-5. **Every design choice** (cameras, lateral speed, re-lock rule, thresholds) was made on lap 5 with a
+map from laps 1-4; laps 6-7 were only scored. Scripts refuse maps / calibrations that contain the scored laps.
 
-- `timestamp_ns` — `header.stamp` of the image (or image set) the pose was computed from, ns.
-- `x`, `y` — position of `constructor0/base_link` in `map`, metres; `yaw` — heading, radians.
-- At least one pose per second over the whole run (camera rate, 10 Hz, is expected).
-- The method must be causal: a pose at time t may only use images with stamps ≤ t.
-
-## Metric
-
-```bash
-python3 tools/evaluate.py gt.csv submission.csv
-```
-
-For every submitted pose the ground truth is linearly interpolated at `timestamp_ns` (poses where the
-GT has a gap > 50 ms are skipped). The error is split into the GT car frame: **longitudinal** (along the
-heading) and **lateral** (across it).
-
-| metric | meaning |
-|---|---|
-| **position RMSE [m]** | √mean(dx² + dy²) — **the score, lower is better** |
-| lateral / longitudinal RMSE [m] | error across / along the car; lateral matters most for racing |
-| position median / p95 [m] | typical and worst-case error |
-| yaw RMSE [deg] | heading error, wrapped to ±180° |
-| within 0.25 / 0.5 / 1.0 m [%] | share of poses within the radius |
-| coverage [%] | share of the 1 s intervals of the run with at least one pose; **≥ 90 % to be ranked** |
-
-Example (GT + 0.3 m lateral noise + 1° yaw noise):
+`tools/evaluate.py data/gt_val.csv out/submission_val.csv`:
 
 ```
 coverage (1 s bins)    100.0 %   (>= 90 % to be ranked)
-position RMSE  [m]     0.304   <- SCORE (lower is better)
-position median/p95    0.211 / 0.591
-lateral RMSE   [m]     0.300
-longitudinal RMSE [m]  0.049
-yaw RMSE     [deg]     1.007
-within 0.25 m          58.5 %
-within 0.50 m          90.5 %
-within 1.00 m          99.9 %
+position RMSE  [m]     0.168   <- SCORE (lower is better)
+position median/p95    0.124 / 0.306
+lateral RMSE   [m]     0.071
+longitudinal RMSE [m]  0.152
+yaw RMSE     [deg]     0.089
+within 0.25 m          87.6 %
+within 0.50 m          100.0 %
+within 1.00 m          100.0 %
 ```
 
-## Files
+The GT itself is ~0.1 m / 0.2° accurate (organisers' README), so these errors are at the level of the reference.
 
-| file | |
+### Ablation (same code and data, one component added per row; `python loc/ablation.py`)
+
+| configuration (validation laps 6-7) | position RMSE | lateral | longitudinal | median / p95 | yaw RMSE | within 1 m |
+|---|---|---|---|---|---|---|
+| B0: dead reckoning (speed + yaw rate) | **20.006 m** | 14.888 m | 13.364 m | 16.143 / 34.540 m | 2.510° | 1.5 % |
+| + yaw-rate bias (laps 1-5) | **8.189 m** | 5.649 m | 5.928 m | 7.204 / 13.860 m | 0.868° | 1.4 % |
+| + relocalization fr+fl (method 3a in EKF) | **0.378 m** | 0.269 m | 0.265 m | 0.159 / 0.840 m | 0.108° | 95.8 % |
+| fr+cr instead of fr+fl | **0.200 m** | 0.121 m | 0.160 m | 0.145 / 0.358 m | 0.088° | 100.0 % |
+| + re-lock after consistent rejected fixes | **0.194 m** | 0.115 m | 0.156 m | 0.145 / 0.350 m | 0.088° | 100.0 % |
+| + lateral speed vy in the prediction (final) | **0.168 m** | 0.071 m | 0.152 m | 0.124 / 0.306 m | 0.089° | 100.0 % |
+
+![ablation](docs/figures/ablation.png)
+
+### Where the error is
+
+![error over time](docs/figures/error_time.png)
+![error along the track](docs/figures/error_map.png)
+![trajectory](docs/figures/trajectory.png)
+
+### Runtime
+
+244 ms per image set (2 cameras, p95 273 ms) — 2.4× slower than real time at 10 Hz.
+Hardware: AMD Ryzen 9 8945HX (16 cores / 32 threads), 32 GB RAM, Windows 11, Python 3.10; the GPU
+(RTX 5070 Laptop) is not used. The two cameras run in parallel threads; SIFT (~0.1 s per image) dominates.
+
+## What failed, and what we learned
+
+| attempt | numbers | lesson |
+|---|---|---|
+| Method 2, matching the map borders to image edges ([archive/method2](archive/method2)) | single-frame lateral error ±0.7-1 m, EKF 51.8 m vs 41.3 m without camera | 6-8 parallel bright lines at the track edge, camera only 0.35 m above the road: 0.5 m shift = 5 px |
+| Refining camera angles on edge cost | fl -4.6° (borders in the sky), cl +6.6° | the cost can be lowered by pushing points out of view; yaw is unobservable for side cameras |
+| Gate lock-out | lap 5: 95 % of the squared error in one 10 s stretch, 73 correct fixes rejected | an over-confident filter is worse than a noisy measurement → consensus re-lock (lap 5: 0.84 → 0.28 m) |
+| Front cameras fl + fr | lap 5 0.87 m vs 0.84 m with fr + cr; blurred section 1.40 m vs 0.31 m | the wide side camera sees close structure (walls, fences) with strong parallax where the front one blurs |
+| Rear camera r | +1.4 m along-track bias, 41 % fixes | likely a ~47 ms stamp offset (at 30 m/s, 10 ms = 0.3 m) |
+| No lateral speed | tight corners: drift over 3 s 1.55 m → 0.66 m with `vy_mps` | sideslip matters exactly where the camera loses track |
+| Multi-threading | two runs gave different CSVs | OpenCV CLAHE / SIFT / matcher objects are not thread-safe → one set per thread, fixed seed |
+
+## Limits
+
+- The map comes from the same session; the hidden run may be faster or differently lit.
+- Map coverage matters: the 86 s pit / out-lap before lap 1 is not in the laps 1-5 map; there only 29 of
+  863 frames get a fix and the error grows to ~4 m before the car rejoins the mapped track (2.7 m RMSE).
+  `--final` therefore builds the map from the whole training run.
+- Not real time yet (244 ms per image set on CPU). No pre-trained model, no external data.
+
+## Repository
+
+| path | content |
 |---|---|
-| `c0_2026-10-13_22-53-42_camloc_0.mcap`, `metadata.yaml` | the dataset (ROS 2 bag) |
-| `tools/extract_gt.py` | ground truth to CSV |
-| `tools/evaluate.py` | scoring |
-| `track_bounds_check.png` | track borders with the GT trajectory |
+| `run.py` | the one command |
+| `loc/` | `vision.py` (camera geometry, features), `build_map.py`, `reloc.py` (PnP), `ekf.py`, `run_reloc.py` (causal loop), `calib_motion.py`, `ablation.py`, `plots.py`, `test_map.py` (dev checks) |
+| `tools/` | organisers' `extract_gt.py`, `evaluate.py` |
+| `tools_team/` | extraction from the mcap, laps, masks, allowed state columns, baseline B0 |
+| `archive/method2/` | the rejected border-matching method |
+| [README_PHASE0.md](README_PHASE0.md) | the first data-preparation phase and B0 |

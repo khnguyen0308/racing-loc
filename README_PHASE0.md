@@ -96,11 +96,12 @@ motion model, the cameras must provide the corrections.
 The bias row is very sensitive: -0.000226 -> 8.04 m, -0.000245 -> 7.10 m. Do not tune it on laps 6-7;
 the EKF (step 6) estimates the bias online instead.
 
-## Step 5 - calibration check / refinement (P1)
+## Step 5 - calibration check / refinement (P1) — archived
+Method 2 was rejected (see [archive/method2/README.md](archive/method2/README.md)); the refine result was wrong and is not used.
 Needs the JPEGs from pipeline step 5; uses GT (development only).
 ```powershell
-python tools_team/project_borders.py --cam cr --n 12 --out out/overlay_cr            # look at the overlays
-python tools_team/project_borders.py --cam cr --n 40 --refine --out out/overlay_cr   # -> config/extrinsic_correction.json
+python archive/method2/project_borders.py --cam cr --n 12 --out out/overlay_cr            # look at the overlays
+python archive/method2/project_borders.py --cam cr --n 40 --refine --out out/overlay_cr   # -> config/extrinsic_correction.json
 ```
 Tested by drawing borders with a known error (yaw +1.5, pitch -0.7, roll +0.4 deg) on synthetic
 images: recovered +1.4 / -0.5 / +0.5 deg. base_link is ~at road level (GT z - border z = -0.07 m),

@@ -56,7 +56,7 @@ def fig_trajectory(sub, gt, E, static, out):
     a.add_patch(Rectangle((cx - 30, cy - 30), 60, 60, fill=False, ec=S2, lw=1.5, zorder=4))
     a.set_title("Validation laps 6-7: estimate on top of ground truth", loc="left", fontsize=11)
     b.set_title(f"Zoom 60 m around the largest error ({E['pos'][k]:.2f} m)", loc="left", fontsize=11)
-    a.legend(loc="upper right")                                     # the circuit leaves this corner empty
+    a.legend(loc="lower right")                                     # below the last straight: empty corner
     fig.tight_layout(); fig.savefig(out / "trajectory.png", dpi=170); plt.close(fig)
 
 
@@ -107,7 +107,7 @@ def fig_ablation(A, out):
         ax.text(v * 1.12, yi, f"{v:.3f} m", va="center", color=INK, fontsize=10)
     ax.set_yticks(y); ax.set_yticklabels(A.config, color=INK2)
     ax.set_xscale("log"); ax.set_xlim(A.pos_rmse.min() * 0.6, A.pos_rmse.max() * 2.2)
-    ax.axvline(1.0, color=MUTED, lw=1, ls="--"); ax.text(1.0, y.max() + 0.6, "1 m target", ha="center", color=INK2, fontsize=9)
+    ax.axvline(1.0, color=MUTED, lw=1, ls="--"); ax.text(1.06, y.max() + 0.6, "1 m target", ha="left", color=INK2, fontsize=9)
     ax.set_xlabel("position RMSE [m], log scale (lower is better)"); ax.grid(axis="y", visible=False)
     ax.set_title("Ablation on validation laps 6-7: one component added per row", loc="left", fontsize=11)
     ax.set_ylim(-0.6, y.max() + 1)

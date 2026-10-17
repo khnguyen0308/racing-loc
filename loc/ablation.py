@@ -32,14 +32,15 @@ def score(gt, sub):
     out = {}
     for line in txt.splitlines():
         for k, name in KEYS.items():
-            if line.startswith(k):
-                out[name] = float(re.findall(r"[-+]?\d+\.\d+", line)[0])
+            if line.startswith(k):          # the value is the LAST number ("within 1.00 m   100.0 %")
+                out[name] = float(re.findall(r"[-+]?\d+\.\d+", line)[-1])
         if line.startswith("position median/p95"):
             out["median"], out["p95"] = map(float, re.findall(r"\d+\.\d+", line)[:2])
     return out
 
 
 def main():
+    rescore = "--rescore" in sys.argv               # only re-score the existing row CSVs
     OUT.mkdir(parents=True, exist_ok=True)
     json.dump({"yawrate_bias": 0.0}, open(OUT / "calib_zero.json", "w"))
     gt = str(ROOT / "data/gt_val.csv")
@@ -48,14 +49,17 @@ def main():
     procs = []
     for i, (name, extra) in enumerate(ROWS):
         out = OUT / f"row{i}.csv"
+        if rescore:
+            procs.append((name, out, None, None)); continue
         log = open(OUT / f"row{i}.log", "w")
         procs.append((name, out, log, subprocess.Popen([str(c) for c in base + extra + ["--out", out]], cwd=ROOT,
                                                        stdout=log, stderr=subprocess.STDOUT)))
     rows = []
     for name, out, log, p in procs:
-        p.wait(); log.close()
-        if p.returncode:
-            raise SystemExit(f"{name} failed, see {log.name}")
+        if p is not None:
+            p.wait(); log.close()
+            if p.returncode:
+                raise SystemExit(f"{name} failed, see {log.name}")
         rows.append(dict(config=name, **score(gt, str(out))))
         print(f"{name:48s} {rows[-1]['pos_rmse']:7.3f} m", flush=True)
     D = pd.DataFrame(rows)
