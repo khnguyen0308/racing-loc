@@ -14,6 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools_team"))
 from masks import get_mask  # noqa: E402
 
+CAMS = ("fr", "cr")   # cameras of the map AND of the localization (chosen on lap 5): one default for every script
+
 
 def rot_zyx(yaw, pitch, roll):
     cy, sy, cp, sp, cr, sr = np.cos(yaw), np.sin(yaw), np.cos(pitch), np.sin(pitch), np.cos(roll), np.sin(roll)

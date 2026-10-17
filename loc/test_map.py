@@ -17,7 +17,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT)]
 from loc.build_map import gt_poses, triangulate_pair  # noqa: E402
-from loc.vision import Camera, features, match         # noqa: E402
+from loc.vision import CAMS, Camera, features, match   # noqa: E402
 
 
 def test_reproj(cam_name, n, laps=(1, 2, 3, 4)):
@@ -116,7 +116,7 @@ def main():
     ap.add_argument("test", choices=["reproj", "reloc"])
     ap.add_argument("--cam", default="fl"); ap.add_argument("--n", type=int, default=40)
     ap.add_argument("--map", default=str(ROOT / "data/map/laps1-4")); ap.add_argument("--lap", type=int, default=5)
-    ap.add_argument("--cams", nargs="+", default=["fl", "fr"])
+    ap.add_argument("--cams", nargs="+", default=list(CAMS))
     a = ap.parse_args()
     if a.test == "reproj":
         test_reproj(a.cam, a.n)

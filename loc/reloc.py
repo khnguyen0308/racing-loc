@@ -3,25 +3,30 @@
 Inference-safe: uses only the images, calibration, the map built by build_map.py (from training laps)
 and the PREDICTED pose of the filter (to pick nearby keyframes). No GT of the run being localized.
 
-    rl = Relocalizer(static, "data/map/laps1-4", cams=("fl", "fr"))
-    res = rl.locate({"fl": img_fl, "fr": img_fr}, pred=(x, y, yaw))   # list of per-camera fixes
+    rl = Relocalizer(static, "data/map/laps1-5")                      # cameras fr + cr (vision.CAMS)
+    res = rl.locate({"fr": img_fr, "cr": img_cr}, pred=(x, y, yaw))   # list of per-camera fixes
 """
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 import numpy as np
 import cv2
 from scipy.spatial import cKDTree
 
-from loc.vision import Camera, MapGround, features, match, yaw_of
+from loc.vision import CAMS, Camera, MapGround, features, match, yaw_of
 
 
 class Relocalizer:
-    def __init__(self, static, map_prefix, cams=("fl", "fr"), radius=15.0, max_dheading_deg=30.0,
+    def __init__(self, static, map_prefix, cams=CAMS, radius=15.0, max_dheading_deg=30.0,
                  n_kf=3, min_inliers=25, reproj_px=3.0, max_dz=1.0):
         self.cams, self.maps = {}, {}
         for c in cams:
             self.cams[c] = Camera(static, c)
-            m = dict(np.load(f"{map_prefix}_{c}.npz"))
+            p = Path(f"{map_prefix}_{c}.npz")
+            if not p.exists():
+                raise FileNotFoundError(f"no map for camera {c}: {p} "
+                                        f"(build it with loc/build_map.py --cams {' '.join(cams)})")
+            m = dict(np.load(p))
             m["tree"] = cKDTree(m["pose"][:, :2])
             self.maps[c] = m
         self.ground = MapGround(static)

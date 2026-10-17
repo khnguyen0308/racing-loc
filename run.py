@@ -27,6 +27,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent
 sys.path[:0] = [str(ROOT), str(ROOT / "tools_team")]
+from loc.vision import CAMS  # noqa: E402
 PY = sys.executable
 
 
@@ -54,7 +55,7 @@ def main():
                     help="training laps for the map + bias (1-5 keeps laps 6-7 for validation; 1-7 for the final test run)")
     ap.add_argument("--final", action="store_true",
                     help="hidden test run: map from the WHOLE training run (all 7 laps + pit lane / out-laps), bias on laps 1-7")
-    ap.add_argument("--cams", nargs="+", default=["fr", "cr"])
+    ap.add_argument("--cams", nargs="+", default=list(CAMS))
     ap.add_argument("--eval-gt", help="score the output with tools/evaluate.py against this GT (development only)")
     ap.add_argument("--rebuild", action="store_true")
     a = ap.parse_args()

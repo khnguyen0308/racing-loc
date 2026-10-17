@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "tools_team")]
 from loc.ekf import CarEKF, body_cov, wrap  # noqa: E402
 from loc.reloc import Relocalizer           # noqa: E402
+from loc.vision import CAMS                 # noqa: E402
 from state_io import load_state             # noqa: E402
 
 
@@ -131,7 +132,7 @@ def main():
     ap.add_argument("--images", default=str(ROOT / "data/map_images"))
     ap.add_argument("--static", default=str(ROOT / "data/static.json"))
     ap.add_argument("--calib", default=str(ROOT / "config/motion_calib.json"))
-    ap.add_argument("--cams", nargs="+", default=["fr", "cr"])
+    ap.add_argument("--cams", nargs="+", default=list(CAMS))
     ap.add_argument("--no-camera", action="store_true", help="prediction only (B0 + calibrated bias)")
     ap.add_argument("--no-vy", action="store_true", help="ignore the body lateral speed vy_mps in the prediction")
     ap.add_argument("--relock", type=int, default=5,
