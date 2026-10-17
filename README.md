@@ -8,7 +8,7 @@ Data: the organisers' training run `c0_2026-10-13_22-53-42_camloc_0.mcap` (7 cam
 
 ## Method in one picture
 
-![pipeline](docs/figures/Pipeline.drawio.png)
+![pipeline](docs/figures/Pipeline.drawio.png) 
 
 INTRO method **3a** (the training run becomes a 3D feature map, relocalization by PnP) inside
 method **4** (a filter that joins car motion and map fixes):
