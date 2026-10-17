@@ -1,0 +1,24 @@
+# Columns of /constructor0/state_estimation (data/state_full.csv) and whether the METHOD may use them.
+# Rule (INTRO p.10): speed, accelerations, yaw rate and other motion fields = allowed;
+# position, orientation and track state s/n = ground truth -> forbidden at inference.
+allowed:
+  speed:        [v_mps, v_raw_mps, vx_mps, vy_mps, vz_mps]        # body frame (checked vs GT, corr 0.9994)
+  rotation:     [wz_radps, wx_radps, wy_radps, ddyaw_radps2]      # wz = yaw rate (corr 0.99976 vs d(yaw)/dt)
+  acceleration: [ax_mps2, ay_mps2, az_mps2, ax_vel_mps2, ay_vel_mps2]
+  vehicle:      [omega_w_fl, omega_w_fr, omega_w_rl, omega_w_rr, delta_wheel_rad, beta_rad, dbeta_radps,
+                 kappa_radpm, gas, brake, gear, rpm, front_brake_pressure, rear_brake_pressure,
+                 cba_actual_pressure_fl_pa, cba_actual_pressure_fr_pa, cba_actual_pressure_rl_pa, cba_actual_pressure_rr_pa,
+                 lambda_fl_perc, lambda_fr_perc, lambda_rl_perc, lambda_rr_perc,
+                 alpha_fl_rad, alpha_fr_rad, alpha_rl_rad, alpha_rr_rad, diff_fr_alpha_rad,
+                 valid_wheelsspeeds_b, valid_imu_b]
+forbidden:      # ground truth: development / scoring only
+  - x_m
+  - y_m
+  - z_m
+  - roll_rad
+  - pitch_rad
+  - yaw_rad
+  - yaw_vel_rad          # heading of the velocity vector in map = heading -> forbidden
+  - pos_accuracy*
+  - vel_accuracy*
+  - sn_map_state.*       # s, n, idx, epsi, is_inside_borders, dist_to_border ...

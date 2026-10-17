@@ -1,0 +1,977 @@
+﻿duration 1194.4 s, 345462 messages
+
+topic                                                          type                                          count      Hz
+/constructor0/sensor/camera_cl/camera_info                     sensor_msgs/msg/CameraInfo                     1195    1.00
+/constructor0/sensor/camera_cl/compressed_image                sensor_msgs/msg/CompressedImage               11944   10.00
+/constructor0/sensor/camera_cr/camera_info                     sensor_msgs/msg/CameraInfo                     1195    1.00
+/constructor0/sensor/camera_cr/compressed_image                sensor_msgs/msg/CompressedImage               11944   10.00
+/constructor0/sensor/camera_fl/camera_info                     sensor_msgs/msg/CameraInfo                     1195    1.00
+/constructor0/sensor/camera_fl/compressed_image                sensor_msgs/msg/CompressedImage               11944   10.00
+/constructor0/sensor/camera_fr/camera_info                     sensor_msgs/msg/CameraInfo                     1195    1.00
+/constructor0/sensor/camera_fr/compressed_image                sensor_msgs/msg/CompressedImage               11944   10.00
+/constructor0/sensor/camera_r/camera_info                      sensor_msgs/msg/CameraInfo                     1195    1.00
+/constructor0/sensor/camera_r/compressed_image                 sensor_msgs/msg/CompressedImage               11939   10.00
+/constructor0/sensor/camera_rl/camera_info                     sensor_msgs/msg/CameraInfo                     1195    1.00
+/constructor0/sensor/camera_rl/compressed_image                sensor_msgs/msg/CompressedImage               11944   10.00
+/constructor0/sensor/camera_rr/camera_info                     sensor_msgs/msg/CameraInfo                     1195    1.00
+/constructor0/sensor/camera_rr/compressed_image                sensor_msgs/msg/CompressedImage               11944   10.00
+/constructor0/state_estimation                                 sd_localization_msgs/msg/StateEstimation     126574  105.97
+/constructor0/track_bounds                                     visualization_msgs/msg/MarkerArray              120    0.10
+/tf                                                            tf2_msgs/msg/TFMessage                       126680  106.06
+/tf_static                                                     tf2_msgs/msg/TFMessage                          120    0.10
+
+=== one example per non-image topic ===
+
+--- /tf_static
+{
+ "transforms": [
+  {
+   "header": {
+    "stamp": {
+     "sec": 1791918157,
+     "nanosec": 109816576
+    },
+    "frame_id": "map"
+   },
+   "child_frame_id": "odom",
+   "transform": {
+    "translation": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0
+    },
+    "rotation": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0,
+     "w": 1.0
+    }
+   }
+  },
+  {
+   "header": {
+    "stamp": {
+     "sec": 1791918157,
+     "nanosec": 109816576
+    },
+    "frame_id": "map"
+   },
+   "child_frame_id": "constructor0/odom",
+   "transform": {
+    "translation": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0
+    },
+    "rotation": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0,
+     "w": 1.0
+    }
+   }
+  },
+  {
+   "header": {
+    "stamp": {
+     "sec": 1791918157,
+     "nanosec": 109816576
+    },
+    "frame_id": "constructor0/base_link"
+   },
+   "child_frame_id": "constructor0/pseudo_odom",
+   "transform": {
+    "translation": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0
+    },
+    "rotation": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0,
+     "w": 1.0
+    }
+   }
+  },
+  {
+   "header": {
+    "stamp": {
+     "sec": 1791918157,
+     "nanosec": 109816576
+    },
+    "frame_id": "constructor0/base_link"
+   },
+   "child_frame_id": "constructor0/wheel_angles",
+   "transform": {
+    "translation": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0
+    },
+    "rotation": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0,
+     "w": 1.0
+    }
+   }
+  },
+  "... (24 items)"
+ ]
+}
+
+--- /constructor0/track_bounds
+{
+ "markers": [
+  {
+   "header": {
+    "stamp": {
+     "sec": 1791918157,
+     "nanosec": 109816576
+    },
+    "frame_id": "map"
+   },
+   "ns": "track_left",
+   "id": 0,
+   "type": 4,
+   "action": 0,
+   "pose": {
+    "position": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0
+    },
+    "orientation": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0,
+     "w": 1.0
+    }
+   },
+   "scale": {
+    "x": 0.3,
+    "y": 0.3,
+    "z": 0.3
+   },
+   "color": {
+    "r": 0.10000000149011612,
+    "g": 0.4000000059604645,
+    "b": 1.0,
+    "a": 1.0
+   },
+   "lifetime": {
+    "sec": 0,
+    "nanosec": 0
+   },
+   "frame_locked": false,
+   "points": [
+    {
+     "x": 96.98821900933056,
+     "y": 343.04230168202383,
+     "z": 9.50418106908885
+    },
+    {
+     "x": 96.58565555959122,
+     "y": 343.331157330949,
+     "z": 9.506006872155126
+    },
+    {
+     "x": 96.182349484054,
+     "y": 343.6222822342574,
+     "z": 9.50805803589413
+    },
+    {
+     "x": 95.77838150400822,
+     "y": 343.91504150008313,
+     "z": 9.510442116782352
+    },
+    "... (5914 items)"
+   ],
+   "colors": [],
+   "texture_resource": "",
+   "texture": {
+    "header": {
+     "stamp": {
+      "sec": 0,
+      "nanosec": 0
+     },
+     "frame_id": ""
+    },
+    "format": "",
+    "data": "<0 bytes>"
+   },
+   "uv_coordinates": [],
+   "text": "",
+   "mesh_resource": "",
+   "mesh_file": {
+    "filename": "",
+    "data": "<0 bytes>"
+   },
+   "mesh_use_embedded_materials": false
+  },
+  {
+   "header": {
+    "stamp": {
+     "sec": 1791918157,
+     "nanosec": 109816576
+    },
+    "frame_id": "map"
+   },
+   "ns": "track_right",
+   "id": 1,
+   "type": 4,
+   "action": 0,
+   "pose": {
+    "position": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0
+    },
+    "orientation": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0,
+     "w": 1.0
+    }
+   },
+   "scale": {
+    "x": 0.3,
+    "y": 0.3,
+    "z": 0.3
+   },
+   "color": {
+    "r": 1.0,
+    "g": 0.20000000298023224,
+    "b": 0.20000000298023224,
+    "a": 1.0
+   },
+   "lifetime": {
+    "sec": 0,
+    "nanosec": 0
+   },
+   "frame_locked": false,
+   "points": [
+    {
+     "x": 260.865445914359,
+     "y": 246.09856567311695,
+     "z": 2.9983825471652845
+    },
+    {
+     "x": 260.7457322169394,
+     "y": 246.57650427918298,
+     "z": 3.016031570309523
+    },
+    {
+     "x": 260.6276793193985,
+     "y": 247.05607721048762,
+     "z": 3.033880337781193
+    },
+    {
+     "x": 260.5138383260304,
+     "y": 247.53758940674012,
+     "z": 3.051913439684543
+    },
+    "... (6115 items)"
+   ],
+   "colors": [],
+   "texture_resource": "",
+   "texture": {
+    "header": {
+     "stamp": {
+      "sec": 0,
+      "nanosec": 0
+     },
+     "frame_id": ""
+    },
+    "format": "",
+    "data": "<0 bytes>"
+   },
+   "uv_coordinates": [],
+   "text": "",
+   "mesh_resource": "",
+   "mesh_file": {
+    "filename": "",
+    "data": "<0 bytes>"
+   },
+   "mesh_use_embedded_materials": false
+  },
+  {
+   "header": {
+    "stamp": {
+     "sec": 1791918157,
+     "nanosec": 109816576
+    },
+    "frame_id": "map"
+   },
+   "ns": "pitlane_left",
+   "id": 2,
+   "type": 4,
+   "action": 0,
+   "pose": {
+    "position": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0
+    },
+    "orientation": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0,
+     "w": 1.0
+    }
+   },
+   "scale": {
+    "x": 0.3,
+    "y": 0.3,
+    "z": 0.3
+   },
+   "color": {
+    "r": 0.4000000059604645,
+    "g": 0.699999988079071,
+    "b": 1.0,
+    "a": 1.0
+   },
+   "lifetime": {
+    "sec": 0,
+    "nanosec": 0
+   },
+   "frame_locked": false,
+   "points": [
+    {
+     "x": -293.16425495555393,
+     "y": -106.26474621142314,
+     "z": 1.2793950020455451
+    },
+    {
+     "x": -293.00516179740987,
+     "y": -105.79180335702583,
+     "z": 1.2696254516721217
+    },
+    {
+     "x": -292.8455449657914,
+     "y": -105.31888983333447,
+     "z": 1.2604090693313785
+    },
+    {
+     "x": -292.6854377981792,
+     "y": -104.84600213750504,
+     "z": 1.251803013659572
+    },
+    "... (2260 items)"
+   ],
+   "colors": [],
+   "texture_resource": "",
+   "texture": {
+    "header": {
+     "stamp": {
+      "sec": 0,
+      "nanosec": 0
+     },
+     "frame_id": ""
+    },
+    "format": "",
+    "data": "<0 bytes>"
+   },
+   "uv_coordinates": [],
+   "text": "",
+   "mesh_resource": "",
+   "mesh_file": {
+    "filename": "",
+    "data": "<0 bytes>"
+   },
+   "mesh_use_embedded_materials": false
+  },
+  {
+   "header": {
+    "stamp": {
+     "sec": 1791918157,
+     "nanosec": 109816576
+    },
+    "frame_id": "map"
+   },
+   "ns": "pitlane_right",
+   "id": 3,
+   "type": 4,
+   "action": 0,
+   "pose": {
+    "position": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0
+    },
+    "orientation": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0,
+     "w": 1.0
+    }
+   },
+   "scale": {
+    "x": 0.3,
+    "y": 0.3,
+    "z": 0.3
+   },
+   "color": {
+    "r": 1.0,
+    "g": 0.6000000238418579,
+    "b": 0.6000000238418579,
+    "a": 1.0
+   },
+   "lifetime": {
+    "sec": 0,
+    "nanosec": 0
+   },
+   "frame_locked": false,
+   "points": [
+    {
+     "x": -280.9553866787756,
+     "y": -106.2874217113984,
+     "z": 1.2021881671067216
+    },
+    {
+     "x": -280.798501926539,
+     "y": -105.81391681843456,
+     "z": 1.2010504009316645
+    },
+    {
+     "x": -280.64087770800717,
+     "y": -105.34071368418276,
+     "z": 1.1998474939910035
+    },
+    {
+     "x": -280.48235034141624,
+     "y": -104.86783441218834,
+     "z": 1.198525722334194
+    },
+    "... (2243 items)"
+   ],
+   "colors": [],
+   "texture_resource": "",
+   "texture": {
+    "header": {
+     "stamp": {
+      "sec": 0,
+      "nanosec": 0
+     },
+     "frame_id": ""
+    },
+    "format": "",
+    "data": "<0 bytes>"
+   },
+   "uv_coordinates": [],
+   "text": "",
+   "mesh_resource": "",
+   "mesh_file": {
+    "filename": "",
+    "data": "<0 bytes>"
+   },
+   "mesh_use_embedded_materials": false
+  }
+ ]
+}
+
+--- /constructor0/sensor/camera_fl/camera_info
+{
+ "header": {
+  "stamp": {
+   "sec": 1791918157,
+   "nanosec": 109816576
+  },
+  "frame_id": "constructor0/camera_fl"
+ },
+ "height": 728,
+ "width": 1506,
+ "distortion_model": "plumb_bob",
+ "d": [
+  -0.39138,
+  0.12224,
+  -0.00695,
+  -0.0012,
+  "... (5 items)"
+ ],
+ "k": [
+  2601.1985,
+  0.0,
+  775.09111,
+  0.0,
+  "... (9 items)"
+ ],
+ "r": [
+  1.0,
+  0.0,
+  0.0,
+  0.0,
+  "... (9 items)"
+ ],
+ "p": [
+  2510.89233,
+  0.0,
+  775.30035,
+  0.0,
+  "... (12 items)"
+ ],
+ "binning_x": 0,
+ "binning_y": 0,
+ "roi": {
+  "x_offset": 0,
+  "y_offset": 0,
+  "height": 0,
+  "width": 0,
+  "do_rectify": false
+ }
+}
+
+--- /constructor0/sensor/camera_fr/camera_info
+{
+ "header": {
+  "stamp": {
+   "sec": 1791918157,
+   "nanosec": 109816576
+  },
+  "frame_id": "constructor0/camera_fr"
+ },
+ "height": 728,
+ "width": 1506,
+ "distortion_model": "plumb_bob",
+ "d": [
+  -0.3972,
+  0.20062,
+  0.00052,
+  -0.00086,
+  "... (5 items)"
+ ],
+ "k": [
+  1349.90359,
+  0.0,
+  754.73965,
+  0.0,
+  "... (9 items)"
+ ],
+ "r": [
+  1.0,
+  0.0,
+  0.0,
+  0.0,
+  "... (9 items)"
+ ],
+ "p": [
+  1174.75476,
+  0.0,
+  752.91001,
+  0.0,
+  "... (12 items)"
+ ],
+ "binning_x": 0,
+ "binning_y": 0,
+ "roi": {
+  "x_offset": 0,
+  "y_offset": 0,
+  "height": 0,
+  "width": 0,
+  "do_rectify": false
+ }
+}
+
+--- /constructor0/sensor/camera_cl/camera_info
+{
+ "header": {
+  "stamp": {
+   "sec": 1791918157,
+   "nanosec": 109816576
+  },
+  "frame_id": "constructor0/camera_cl"
+ },
+ "height": 728,
+ "width": 1506,
+ "distortion_model": "plumb_bob",
+ "d": [
+  -0.29509,
+  0.07168,
+  0.0014,
+  0.0019,
+  "... (5 items)"
+ ],
+ "k": [
+  796.97034,
+  0.0,
+  738.70927,
+  0.0,
+  "... (9 items)"
+ ],
+ "r": [
+  1.0,
+  0.0,
+  0.0,
+  0.0,
+  "... (9 items)"
+ ],
+ "p": [
+  560.73645,
+  0.0,
+  748.17743,
+  0.0,
+  "... (12 items)"
+ ],
+ "binning_x": 0,
+ "binning_y": 0,
+ "roi": {
+  "x_offset": 0,
+  "y_offset": 0,
+  "height": 0,
+  "width": 0,
+  "do_rectify": false
+ }
+}
+
+--- /constructor0/sensor/camera_cr/camera_info
+{
+ "header": {
+  "stamp": {
+   "sec": 1791918157,
+   "nanosec": 109816576
+  },
+  "frame_id": "constructor0/camera_cr"
+ },
+ "height": 728,
+ "width": 1506,
+ "distortion_model": "plumb_bob",
+ "d": [
+  -0.29771,
+  0.07826,
+  0.00364,
+  0.00101,
+  "... (5 items)"
+ ],
+ "k": [
+  743.92877,
+  0.0,
+  741.69299,
+  0.0,
+  "... (9 items)"
+ ],
+ "r": [
+  1.0,
+  0.0,
+  0.0,
+  0.0,
+  "... (9 items)"
+ ],
+ "p": [
+  552.72449,
+  0.0,
+  746.69939,
+  0.0,
+  "... (12 items)"
+ ],
+ "binning_x": 0,
+ "binning_y": 0,
+ "roi": {
+  "x_offset": 0,
+  "y_offset": 0,
+  "height": 0,
+  "width": 0,
+  "do_rectify": false
+ }
+}
+
+--- /constructor0/sensor/camera_r/camera_info
+{
+ "header": {
+  "stamp": {
+   "sec": 1791918157,
+   "nanosec": 109816576
+  },
+  "frame_id": "constructor0/camera_r"
+ },
+ "height": 728,
+ "width": 1506,
+ "distortion_model": "plumb_bob",
+ "d": [
+  -0.33745,
+  0.12751,
+  -0.00152,
+  -0.0009,
+  "... (5 items)"
+ ],
+ "k": [
+  1491.13827,
+  0.0,
+  753.63034,
+  0.0,
+  "... (9 items)"
+ ],
+ "r": [
+  1.0,
+  0.0,
+  0.0,
+  0.0,
+  "... (9 items)"
+ ],
+ "p": [
+  1352.63916,
+  0.0,
+  751.75737,
+  0.0,
+  "... (12 items)"
+ ],
+ "binning_x": 0,
+ "binning_y": 0,
+ "roi": {
+  "x_offset": 0,
+  "y_offset": 0,
+  "height": 0,
+  "width": 0,
+  "do_rectify": false
+ }
+}
+
+--- /constructor0/sensor/camera_rl/camera_info
+{
+ "header": {
+  "stamp": {
+   "sec": 1791918157,
+   "nanosec": 109816576
+  },
+  "frame_id": "constructor0/camera_rl"
+ },
+ "height": 728,
+ "width": 1506,
+ "distortion_model": "plumb_bob",
+ "d": [
+  -0.34195,
+  0.14553,
+  -0.00055,
+  -0.00081,
+  "... (5 items)"
+ ],
+ "k": [
+  1514.47443,
+  0.0,
+  798.58709,
+  0.0,
+  "... (9 items)"
+ ],
+ "r": [
+  1.0,
+  0.0,
+  0.0,
+  0.0,
+  "... (9 items)"
+ ],
+ "p": [
+  1377.41553,
+  0.0,
+  805.81646,
+  0.0,
+  "... (12 items)"
+ ],
+ "binning_x": 0,
+ "binning_y": 0,
+ "roi": {
+  "x_offset": 0,
+  "y_offset": 0,
+  "height": 0,
+  "width": 0,
+  "do_rectify": false
+ }
+}
+
+--- /constructor0/sensor/camera_rr/camera_info
+{
+ "header": {
+  "stamp": {
+   "sec": 1791918157,
+   "nanosec": 109816576
+  },
+  "frame_id": "constructor0/camera_rr"
+ },
+ "height": 728,
+ "width": 1506,
+ "distortion_model": "plumb_bob",
+ "d": [
+  -0.23608,
+  0.04012,
+  0.00902,
+  0.0002,
+  "... (5 items)"
+ ],
+ "k": [
+  831.53433,
+  0.0,
+  752.61715,
+  0.0,
+  "... (9 items)"
+ ],
+ "r": [
+  1.0,
+  0.0,
+  0.0,
+  0.0,
+  "... (9 items)"
+ ],
+ "p": [
+  612.82434,
+  0.0,
+  753.07197,
+  0.0,
+  "... (12 items)"
+ ],
+ "binning_x": 0,
+ "binning_y": 0,
+ "roi": {
+  "x_offset": 0,
+  "y_offset": 0,
+  "height": 0,
+  "width": 0,
+  "do_rectify": false
+ }
+}
+
+--- /constructor0/state_estimation
+{
+ "header": {
+  "stamp": {
+   "sec": 1791918157,
+   "nanosec": 114146050
+  },
+  "frame_id": "map"
+ },
+ "se_status": 1,
+ "se_state": 1,
+ "x_m": 7.172766015656331,
+ "y_m": -9.90931027969905,
+ "z_m": -0.03729988526731984,
+ "roll_rad": -0.01926543342486537,
+ "pitch_rad": -0.0007513339394988617,
+ "yaw_rad": 0.126254791939026,
+ "pos_accuracy": [
+  0.3274111859500408,
+  0.28802191838622093,
+  0.4577018804848194
+ ],
+ "vel_accuracy": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "wx_radps": 0.00035086460411548615,
+ "wy_radps": -0.0011509553296491504,
+ "wz_radps": -0.00013169398880563676,
+ "vx_mps": 9.999999747378752e-06,
+ "vy_mps": -0.00046131963608786464,
+ "vz_mps": 0.0,
+ "omega_w_fl": 0.0,
+ "omega_w_fr": 0.0,
+ "omega_w_rl": 0.0,
+ "omega_w_rr": 0.0,
+ "v_mps": 9.999999747378752e-06,
+ "v_raw_mps": 0.0,
+ "beta_rad": 0.0,
+ "ax_mps2": -0.06005760282278061,
+ "ay_mps2": -0.010744688101112843,
+ "az_mps2": -0.009751178324222565,
+ "valid_imu_b": false,
+ "yaw_vel_rad": 0.126254791939026,
+ "kappa_radpm": -3.0027314547716594e-05,
+ "dbeta_radps": 0.0,
+ "ddyaw_radps2": 0.0,
+ "ax_vel_mps2": -0.06005760282278061,
+ "ay_vel_mps2": -0.010744688101112843,
+ "lambda_fl_perc": 0.0,
+ "lambda_fr_perc": 0.0,
+ "lambda_rl_perc": 0.0,
+ "lambda_rr_perc": 0.0,
+ "valid_wheelsspeeds_b": false,
+ "alpha_fl_rad": 0.0,
+ "alpha_fr_rad": 0.0,
+ "alpha_rl_rad": 0.0,
+ "alpha_rr_rad": 0.0,
+ "diff_fr_alpha_rad": 0.0,
+ "delta_wheel_rad": -0.0040128412656486034,
+ "timestamp": 1791918157.114146,
+ "gas": 0.09200000017881393,
+ "brake": 1510000.0,
+ "clutch": 0.0,
+ "gear": 1.0,
+ "rpm": 937.5999755859375,
+ "front_brake_pressure": 0.0,
+ "rear_brake_pressure": 0.0,
+ "vehicle_timestamp": 0.0,
+ "residuals_status": true,
+ "std_dev_status": true,
+ "is_safe": true,
+ "cba_actual_pressure_fl_pa": 520000.0,
+ "cba_actual_pressure_fr_pa": 530000.0,
+ "cba_actual_pressure_rl_pa": 310000.0,
+ "cba_actual_pressure_rr_pa": 330000.0,
+ "sn_map_state": {
+  "current_lane": 0,
+  "track_sn_state": {
+   "sn_state": {
+    "idx": 1331,
+    "ds": 0.6972790613643174,
+    "d_idx": 0.6855242296856509,
+    "n": -13.107281993047259,
+    "epsi": 0.0,
+    "status": 2
+   },
+   "is_inside_borders": false,
+   "dist_to_border": 6.675441772177041
+  },
+  "pitlane_sn_state": {
+   "sn_state": {
+    "idx": 1331,
+    "ds": 0.7020300669209201,
+    "d_idx": 0.6899027985347252,
+    "n": 0.273171777070541,
+    "epsi": 0.0,
+    "status": 2
+   },
+   "is_inside_borders": true,
+   "dist_to_border": 0.0
+  }
+ }
+}
+
+--- /tf
+{
+ "transforms": [
+  {
+   "header": {
+    "stamp": {
+     "sec": 1791918157,
+     "nanosec": 114146050
+    },
+    "frame_id": "map"
+   },
+   "child_frame_id": "constructor0/base_link",
+   "transform": {
+    "translation": {
+     "x": 7.172766015656331,
+     "y": -9.90931027969905,
+     "z": -0.03729988526731984
+    },
+    "rotation": {
+     "x": -0.009589682190003317,
+     "y": -0.0009825763693074611,
+     "z": 0.06307893380942833,
+     "w": 0.9979619835688326
+    }
+   }
+  }
+ ]
+}
+
+--- /constructor0/sensor/camera_cl/compressed_image
+ {
+ "header": {
+  "stamp": {
+   "sec": 1791918157,
+   "nanosec": 76998392
+  },
+  "frame_id": "constructor0/camera_cl"
+ },
+ "format": "jpeg",
+ "data": "<77235 bytes>"
+}
