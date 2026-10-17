@@ -2,5 +2,6 @@
 data/
 out/
 .racing-loc/
+.venv/
 __pycache__/
 *.pyc

@@ -3,7 +3,8 @@
 **Result on our validation laps 6-7 (never used for training or tuning): position RMSE 0.168 m,
 lateral 0.071 m, yaw 0.089°, 100 % of poses within 0.5 m, coverage 100 %, causal, 10 Hz.**
 
-The dataset description of the organisers is in [DATASET.md](DATASET.md).
+Data: the organisers' training run `c0_2026-10-13_22-53-42_camloc_0.mcap` (7 cameras at 10 Hz, car state,
+`/tf` ground truth, 1 194 s, 7 laps + pit lane).
 
 ## Method in one picture
 
@@ -14,7 +15,7 @@ method **4** (a filter that joins car motion and map fixes):
 
 - **Offline, once, training run** (ground truth allowed): SIFT features of the cameras `fr` and `cr`
   (5 Hz keyframes, contrast-enhanced with CLAHE, car body masked) are matched between keyframes 0.6 s and
-  0.2 s apart, checked against the epipolar line of the **known GT poses** and triangulated: about 1 M 3D
+  0.2 s apart, checked against the epipolar line of the **known GT poses** and triangulated: about 1.3 M 3D
   points with descriptors. The yaw-rate bias of the car state is estimated on the same laps.
 - **Online, causal, every image set (10 Hz)**: an EKF predicts the pose from speed, yaw rate and lateral
   speed of the car state (stamps ≤ t). The keyframes near the **predicted** pose give candidate 3D points;
@@ -29,27 +30,54 @@ Never: `/tf`, position / orientation / s, n of `state_estimation`
 
 ## Run
 
+Needs Python 3.10, CPU only (no GPU), about 1.5 GB of free disk next to the 7.5 GB training mcap.
+Tested on Windows 11 in PowerShell; every command is one line and works the same in bash.
+
+**1. Install** (from the repository root)
+
 ```bash
-python -m venv .venv && . .venv/bin/activate          # Windows: .venv\Scripts\Activate.ps1
-pip install -r requirements.txt                        # Python 3.10, CPU only
-# put the training run at data/c0_2026-10-13_22-53-42_camloc_0.mcap
-
-# hidden test run: map from the whole training run (7 laps + pit lane), first pose "timestamp_ns,x,y,yaw"
-python run.py --final --test-mcap <test.mcap> --first-pose <t_ns>,<x>,<y>,<yaw> --out out/submission.csv
-
-# reproduce our validation score (map + bias from laps 1-5, scored on laps 6-7)
-python tools_team/crop_gt.py data/gt.csv data/laps.csv 6 7 --out data/gt_val.csv   # after the first run.py
-python run.py --test-mcap data/c0_2026-10-13_22-53-42_camloc_0.mcap --first-pose-csv data/gt_val.csv \
-              --out out/submission_val.csv --eval-gt data/gt_val.csv
+python -m venv .venv
+.venv\Scripts\Activate.ps1           # Windows PowerShell;  Linux / macOS: source .venv/bin/activate
+pip install -r requirements.txt
 ```
+
+Copy the training run to `data/c0_2026-10-13_22-53-42_camloc_0.mcap` (create `data/`). It is needed for every run,
+also for the hidden test run: the 3D map and the yaw-rate bias are built from it.
+
+**2. Hidden test run → submission CSV**
+
+```bash
+python run.py --final --test-mcap <test.mcap> --first-pose <timestamp_ns>,<x>,<y>,<yaw> --out out/submission.csv
+```
+
+- `--first-pose`: the first pose of the run, given by the organisers (the only ground truth used). A CSV with the
+  header `timestamp_ns,x,y,yaw` works too: `--first-pose-csv <file>` (its first row is used).
+- `--final`: map and bias from the whole training run (7 laps + pit lane).
+- Output `out/submission.csv`: `timestamp_ns,x,y,yaw`, one pose per image set (10 Hz, `header.stamp` of the images).
+- First run about 1 h (map from the whole run); the map is cached, later runs only localize (about 2.7 s of compute
+  per second of data).
+
+**3. Reproduce our validation score** (map + bias from laps 1-5, scored on laps 6-7)
+
+```bash
+python tools/extract_gt.py data/c0_2026-10-13_22-53-42_camloc_0.mcap data/gt.csv
+python tools_team/extract_static.py data/c0_2026-10-13_22-53-42_camloc_0.mcap data/static.json
+python tools_team/track_and_laps.py data/static.json data/gt.csv data/laps.csv out/track_gt.png
+python tools_team/crop_gt.py data/gt.csv data/laps.csv 6 7 --out data/gt_val.csv
+python run.py --test-mcap data/c0_2026-10-13_22-53-42_camloc_0.mcap --first-pose-csv data/gt_val.csv --out out/submission_val.csv --eval-gt data/gt_val.csv
+```
+
+The first four lines only cut out the ground truth of laps 6-7. `run.py` reads its first row (first pose) and its
+last row (end of the time window), never the poses in between; `--eval-gt` then prints the `evaluate.py` output
+shown under Results (0.168 m). About 50 min the first time.
 
 `run.py` runs every stage and caches its outputs in `data/` and `config/` (`--rebuild` recomputes them):
 GT / static / car state extraction → map images → laps → car-body masks → yaw-rate bias → 3D map →
-localization. A full run from the raw mcap takes about 45 min on our laptop (map ~16 min, localization of
-223 s ~10 min). The output is deterministic (fixed RANSAC seed, one OpenCV object set per thread): two runs
+localization. The output is deterministic (fixed RANSAC seed, one OpenCV object set per thread): two runs
 give byte-identical CSV files, also a `--rebuild` from a clean checkout (same maps, same CSV hash).
 
 Other entry points: `python loc/ablation.py` (table below), `python loc/plots.py` (figures),
+`python loc/video.py` (video of the path against ground truth),
 `python loc/test_map.py reloc --map data/map/laps1-4 --lap 5` (per-frame relocalization check).
 
 ## Results
@@ -124,8 +152,8 @@ Hardware: AMD Ryzen 9 8945HX (16 cores / 32 threads), 32 GB RAM, Windows 11, Pyt
 | path | content |
 |---|---|
 | `run.py` | the one command |
-| `loc/` | `vision.py` (camera geometry, features), `build_map.py`, `reloc.py` (PnP), `ekf.py`, `run_reloc.py` (causal loop), `calib_motion.py`, `ablation.py`, `plots.py`, `test_map.py` (dev checks) |
+| `loc/` | `vision.py` (camera geometry, features), `build_map.py`, `reloc.py` (PnP), `ekf.py`, `run_reloc.py` (causal loop), `calib_motion.py`, `ablation.py`, `plots.py`, `video.py`, `test_map.py` (dev checks) |
 | `tools/` | organisers' `extract_gt.py`, `evaluate.py` |
 | `tools_team/` | extraction from the mcap, laps, masks, allowed state columns, baseline B0 |
 | `archive/method2/` | the rejected border-matching method |
-| [README_PHASE0.md](README_PHASE0.md) | the first data-preparation phase and B0 |
+| `archive/tests/` | a tiny fake mcap with the same topics, to smoke-test the extraction scripts (not used by `run.py`) |

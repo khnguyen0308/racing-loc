@@ -9,6 +9,7 @@
     python3 tools_team/track_and_laps.py data/static.json data/gt.csv data/laps.csv data/track_gt.png
 """
 import json, sys
+from pathlib import Path
 import numpy as np
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -84,6 +85,7 @@ def main(static_path, gt_path, out_csv, out_png):
     sc = ax.scatter(xy[::10, 0], xy[::10, 1], c=speed[::10], s=1, cmap="viridis")
     ax.plot([a[0], b[0]], [a[1], b[1]], "r-", lw=2, label="start gate")
     ax.set_aspect("equal"); ax.legend(loc="best", fontsize=7); fig.colorbar(sc, label="GT speed [m/s]")
+    Path(out_png).parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_png, dpi=150); print(f"-> {out_png}")
     np.save(out_csv.replace(".csv", "_centre.npy"), C)
 
