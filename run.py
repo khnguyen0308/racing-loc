@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ONE COMMAND: raw mcap files -> pose CSV (timestamp_ns,x,y,yaw), one pose per image set at 10 Hz.
+"""ONE COMMAND: raw mcap files -> pose CSV (timestamp_ns,x,y,yaw,confidence,status), one pose per image set at 10 Hz.
 
     # hidden test run (first pose given by the organisers as "timestamp_ns,x,y,yaw"),
     # map from the whole training run (all laps + pit lane)
@@ -27,6 +27,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent
 sys.path[:0] = [str(ROOT), str(ROOT / "tools_team")]
+from loc.vision import CAMS  # noqa: E402
 PY = sys.executable
 
 
@@ -54,7 +55,7 @@ def main():
                     help="training laps for the map + bias (1-5 keeps laps 6-7 for validation; 1-7 for the final test run)")
     ap.add_argument("--final", action="store_true",
                     help="hidden test run: map from the WHOLE training run (all 7 laps + pit lane / out-laps), bias on laps 1-7")
-    ap.add_argument("--cams", nargs="+", default=["fr", "cr"])
+    ap.add_argument("--cams", nargs="+", default=list(CAMS))
     ap.add_argument("--eval-gt", help="score the output with tools/evaluate.py against this GT (development only)")
     ap.add_argument("--rebuild", action="store_true")
     a = ap.parse_args()
@@ -103,7 +104,7 @@ def main():
     t1 = a.end_ns or t_end or np.iinfo(np.int64).max // 2
 
     from loc.reloc import Relocalizer
-    from loc.run_reloc import localize, mcap_source, summary
+    from loc.run_reloc import COLS, localize, mcap_source, summary
     from state_io import load_state
     S = load_state(test_state, ["v_mps", "wz_radps", "vy_mps"])
     rl = Relocalizer(json.load(open(D / "static.json")), str(mp), cams=a.cams)
@@ -112,11 +113,13 @@ def main():
     P, G, ms, f = localize(mcap_source(a.test_mcap, a.cams, t0, t1), S, (x0, y0, yaw0), t0, rl,
                            json.load(open(calib))["yawrate_bias"], verbose_every=1000)
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
-    P[["timestamp_ns", "x", "y", "yaw"]].to_csv(a.out, index=False, float_format="%.6f")
+    P[COLS].to_csv(a.out, index=False, float_format="%.6f")
     G.to_csv(work / "reloc_log.csv", index=False)
     print(f"[done] {summary(P, G, ms, f)} | wall {time.time() - tic:.0f} s -> {a.out}")
-    if a.eval_gt:
-        subprocess.run([PY, "tools/evaluate.py", a.eval_gt, a.out], check=True, cwd=ROOT)
+    if a.eval_gt:                                    # scoring output is kept next to the pose file
+        r = subprocess.run([PY, "tools/evaluate.py", a.eval_gt, a.out], check=True, cwd=ROOT, capture_output=True, text=True)
+        print(r.stdout, end="")
+        Path(a.out).with_suffix(".evaluate.txt").write_text(r.stdout, encoding="utf-8")
 
 
 if __name__ == "__main__":

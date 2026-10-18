@@ -6,6 +6,14 @@ lateral 0.071 m, yaw 0.089°, 100 % of poses within 0.5 m, coverage 100 %, causa
 Data: the organisers' training run `c0_2026-10-13_22-53-42_camloc_0.mcap` (7 cameras at 10 Hz, car state,
 `/tf` ground truth, 1 194 s, 7 laps + pit lane).
 
+## Deliverables
+
+| required | where |
+|---|---|
+| Pose files, one CSV per test sequence | `results/<test sequence>.csv`, written by `run.py` (Run, step 2). Columns `timestamp_ns, x, y, yaw, confidence, status` in the dataset's `map` frame, the frame of the `/tf` ground truth |
+| Source code, model, run script | all code is in this repository; `run.py` reproduces every pose file with one command. There are no trained network weights: the model is the 3D feature map and the yaw-rate bias, which `run.py` builds deterministically from the training run (`data/map/<tag>_<cam>.npz`, `config/motion_calib_<tag>.json`; about 0.2 GB, so not stored in git) |
+| Validation results | [results/validation_laps6-7.evaluate.txt](results/validation_laps6-7.evaluate.txt): output of the provided `tools/evaluate.py` on laps 6-7, for the pose file [results/validation_laps6-7.csv](results/validation_laps6-7.csv) |
+
 ## Method in one picture
 
 ![pipeline](docs/figures/Pipeline.drawio.png) 
@@ -47,15 +55,23 @@ also for the hidden test run: the 3D map and the yaw-rate bias are built from it
 **2. Hidden test run → submission CSV**
 
 ```bash
-python run.py --final --test-mcap <test.mcap> --first-pose <timestamp_ns>,<x>,<y>,<yaw> --out out/submission.csv
+python run.py --final --test-mcap <test.mcap> --first-pose <timestamp_ns>,<x>,<y>,<yaw> --out results/<test sequence>.csv
 ```
 
 - `--first-pose`: the first pose of the run, given by the organisers (the only ground truth used). A CSV with the
   header `timestamp_ns,x,y,yaw` works too: `--first-pose-csv <file>` (its first row is used).
 - `--final`: map and bias from the whole training run (7 laps + pit lane).
-- Output `out/submission.csv`: `timestamp_ns,x,y,yaw`, one pose per image set (10 Hz, `header.stamp` of the images).
 - First run about 1 h (map from the whole run); the map is cached, later runs only localize (about 2.7 s of compute
-  per second of data).
+  per second of data). Run it once per test sequence.
+
+The pose file has one row per image set (10 Hz):
+
+| column | meaning |
+|---|---|
+| `timestamp_ns` | `header.stamp` of the images [ns]; this is the column name the provided `tools/evaluate.py` reads |
+| `x`, `y` [m], `yaw` [rad] | pose of `constructor0/base_link` in the `map` frame |
+| `confidence` [0-1] | the filter's own probability that the position error is below 1 m: 1 − exp(−1 m² / σ²), with σ² = P_xx + P_yy of the EKF |
+| `status` | `ok` when confidence ≥ 0.5 (σ below 1.2 m), `lost` otherwise (no accepted camera fix for a while) |
 
 **3. Reproduce our validation score** (map + bias from laps 1-5, scored on laps 6-7)
 
@@ -64,12 +80,12 @@ python tools/extract_gt.py data/c0_2026-10-13_22-53-42_camloc_0.mcap data/gt.csv
 python tools_team/extract_static.py data/c0_2026-10-13_22-53-42_camloc_0.mcap data/static.json
 python tools_team/track_and_laps.py data/static.json data/gt.csv data/laps.csv out/track_gt.png
 python tools_team/crop_gt.py data/gt.csv data/laps.csv 6 7 --out data/gt_val.csv
-python run.py --test-mcap data/c0_2026-10-13_22-53-42_camloc_0.mcap --first-pose-csv data/gt_val.csv --out out/submission_val.csv --eval-gt data/gt_val.csv
+python run.py --test-mcap data/c0_2026-10-13_22-53-42_camloc_0.mcap --first-pose-csv data/gt_val.csv --out results/validation_laps6-7.csv --eval-gt data/gt_val.csv
 ```
 
 The first four lines only cut out the ground truth of laps 6-7. `run.py` reads its first row (first pose) and its
 last row (end of the time window), never the poses in between; `--eval-gt` then prints the `evaluate.py` output
-shown under Results (0.168 m). About 50 min the first time.
+shown under Results (0.168 m) and saves it as `results/validation_laps6-7.evaluate.txt`. About 50 min the first time.
 
 `run.py` runs every stage and caches its outputs in `data/` and `config/` (`--rebuild` recomputes them):
 GT / static / car state extraction → map images → laps → car-body masks → yaw-rate bias → 3D map →
@@ -86,7 +102,8 @@ Validation = laps 6 and 7 (223.5 s, lap 7 is the fastest lap of the run, 41 m/s)
 laps 1-5. **Every design choice** (cameras, lateral speed, re-lock rule, thresholds) was made on lap 5 with a
 map from laps 1-4; laps 6-7 were only scored. Scripts refuse maps / calibrations that contain the scored laps.
 
-`tools/evaluate.py data/gt_val.csv out/submission_val.csv`:
+`tools/evaluate.py data/gt_val.csv results/validation_laps6-7.csv`
+(saved in [results/validation_laps6-7.evaluate.txt](results/validation_laps6-7.evaluate.txt)):
 
 ```
 coverage (1 s bins)    100.0 %   (>= 90 % to be ranked)
@@ -152,6 +169,7 @@ Hardware: AMD Ryzen 9 8945HX (16 cores / 32 threads), 32 GB RAM, Windows 11, Pyt
 | path | content |
 |---|---|
 | `run.py` | the one command |
+| `results/` | pose files (one CSV per sequence) and the scoring output on the validation laps |
 | `loc/` | `vision.py` (camera geometry, features), `build_map.py`, `reloc.py` (PnP), `ekf.py`, `run_reloc.py` (causal loop), `calib_motion.py`, `ablation.py`, `plots.py`, `video.py`, `test_map.py` (dev checks) |
 | `tools/` | organisers' `extract_gt.py`, `evaluate.py` |
 | `tools_team/` | extraction from the mcap, laps, masks, allowed state columns, baseline B0 |

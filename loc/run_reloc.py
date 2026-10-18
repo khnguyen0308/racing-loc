@@ -22,6 +22,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "tools_team")]
 from loc.ekf import CarEKF, body_cov, wrap  # noqa: E402
 from loc.reloc import Relocalizer           # noqa: E402
+from loc.vision import CAMS                 # noqa: E402
+
+# pose file columns; "timestamp_ns" is the name the organisers' scoring script reads (tools/evaluate.py)
+COLS = ["timestamp_ns", "x", "y", "yaw", "confidence", "status"]
 from state_io import load_state             # noqa: E402
 
 
@@ -107,11 +111,14 @@ def localize(source, state, first_pose, t0, rl, yawrate_bias=0.0, sig_lat=0.25, 
         if verbose_every and n % verbose_every == 0:
             print(f"  frame {n}: {np.mean(ms[-verbose_every:]) if ms else 0:.0f} ms/frame, sigma_pos {out[-1][4]:.2f} m", flush=True)
     D = pd.DataFrame(out, columns=["timestamp_ns", "x", "y", "yaw", "sigma_pos"])
+    # sigma_pos^2 = Pxx + Pyy: with a round 2D Gaussian, P(position error < 1 m) = 1 - exp(-1 m^2 / sigma_pos^2)
+    D["confidence"] = 1 - np.exp(-1.0 / np.maximum(D.sigma_pos, 1e-3) ** 2)
+    D["status"] = np.where(D.confidence >= 0.5, "ok", "lost")
     return D, pd.DataFrame(log), ms, f
 
 
 def summary(D, G, ms, f):
-    s = f"{len(D)} poses"
+    s = f"{len(D)} poses ({100 * D.status.eq('ok').mean():.1f} % ok)"
     if len(G):
         fx = G.cam != ""
         s += (f" | fixes {int(fx.sum())}, used {int(G.used.sum())}, gated out {int((fx & ~G.used).sum())}, "
@@ -131,7 +138,7 @@ def main():
     ap.add_argument("--images", default=str(ROOT / "data/map_images"))
     ap.add_argument("--static", default=str(ROOT / "data/static.json"))
     ap.add_argument("--calib", default=str(ROOT / "config/motion_calib.json"))
-    ap.add_argument("--cams", nargs="+", default=["fr", "cr"])
+    ap.add_argument("--cams", nargs="+", default=list(CAMS))
     ap.add_argument("--no-camera", action="store_true", help="prediction only (B0 + calibrated bias)")
     ap.add_argument("--no-vy", action="store_true", help="ignore the body lateral speed vy_mps in the prediction")
     ap.add_argument("--relock", type=int, default=5,
@@ -151,7 +158,7 @@ def main():
     src = (mcap_source(a.mcap, a.cams, t0, t1) if a.mcap else jpeg_source(a.images, a.stamps, a.cams, t0, t1))
     D, G, ms, f = localize(src, S, (gt.x.iloc[0], gt.y.iloc[0], gt.yaw.iloc[0]), t0, rl, calib["yawrate_bias"],
                            relock=a.relock, verbose_every=500)
-    D[["timestamp_ns", "x", "y", "yaw"]].to_csv(a.out, index=False, float_format="%.6f")
+    D[COLS].to_csv(a.out, index=False, float_format="%.6f")
     G.to_csv(a.out.replace(".csv", "_log.csv"), index=False)
     print(summary(D, G, ms, f), "->", a.out)
 

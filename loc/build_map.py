@@ -18,7 +18,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT)]
-from loc.vision import Camera, T_map_base, features, match  # noqa: E402
+from loc.vision import CAMS, Camera, T_map_base, features, match  # noqa: E402
 
 
 def gt_poses(stamps, gt, S):
@@ -68,7 +68,7 @@ def triangulate_pair(cam, f1, f2, T1, T2, epi_px=4.0, reproj_px=4.0, min_paralla
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--laps", type=int, nargs="+", required=True)
-    ap.add_argument("--cams", nargs="+", default=["fl", "fr"])
+    ap.add_argument("--cams", nargs="+", default=list(CAMS))
     ap.add_argument("--images", default=str(ROOT / "data/map_images"))
     ap.add_argument("--steps", type=int, nargs="+", default=[3, 1],
                     help="pair keyframe i with i+step (1 = 0.2 s at 5 Hz): long = better depth (tried first), short = more points")
