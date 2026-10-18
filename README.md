@@ -3,6 +3,8 @@
 **Result on our validation laps 6-7 (never used for training or tuning): position RMSE 0.168 m,
 lateral 0.071 m, yaw 0.089°, 100 % of poses within 0.5 m, coverage 100 %, causal, 10 Hz.**
 
+![Demo: estimated path vs ground truth](docs/figures/demo.gif)
+
 Data: the organisers' training run `c0_2026-10-13_22-53-42_camloc_0.mcap` (7 cameras at 10 Hz, car state,
 `/tf` ground truth, 1 194 s, 7 laps + pit lane).
 
