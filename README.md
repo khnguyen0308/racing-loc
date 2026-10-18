@@ -16,7 +16,7 @@ Data: the organisers' training run `c0_2026-10-13_22-53-42_camloc_0.mcap` (7 cam
 | Source code, model, run script | all code is in this repository; `run.py` reproduces every pose file with one command. There are no trained network weights: the model is the 3D feature map and the yaw-rate bias, which `run.py` builds deterministically from the training run (`data/map/<tag>_<cam>.npz`, `config/motion_calib_<tag>.json`; about 0.2 GB, so not stored in git) |
 | Validation results | [results/validation_laps6-7.evaluate.txt](results/validation_laps6-7.evaluate.txt): output of the provided `tools/evaluate.py` on laps 6-7, for the pose file [results/validation_laps6-7.csv](results/validation_laps6-7.csv) |
 
-## Method in one picture
+## Our Method 
 
 ![pipeline](docs/figures/Pipeline.drawio.png) 
 
